@@ -136,6 +136,44 @@
             text-decoration-style: solid;
         }
 
+        /* Home page styles */
+        .home-content {
+            background: #fff;
+            padding: 2rem;
+            margin: 2rem 0;
+            border: 1px solid #2c1810;
+        }
+
+        .home-content h2 {
+            font-size: 1.2rem;
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: normal;
+            border-bottom: 1px solid #2c1810;
+            padding-bottom: 0.5rem;
+        }
+
+        .home-content h2:first-child {
+            margin-top: 0;
+        }
+
+        .feature-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .feature-list li {
+            margin-bottom: 0.5rem;
+            padding-left: 1.5rem;
+            position: relative;
+        }
+
+        .feature-list li:before {
+            content: "•";
+            position: absolute;
+            left: 0.5rem;
+        }
+
         .message {
             margin-top: 1.5rem;
             padding: 1rem;
@@ -162,14 +200,50 @@
 <body>
     <nav>
         <ul>
-            <li><a href="#" class="active" data-page="library">Library</a></li>
+            <li><a href="#" class="active" data-page="home">Home</a></li>
+            <li><a href="#" data-page="library">Library</a></li>
             <li><a href="#" data-page="submit">Submit Entry</a></li>
         </ul>
     </nav>
 
     <div id="pages">
+        <!-- Home Page -->
+        <div id="home" class="content">
+            <h1>THE VANGUARD LIBRARY</h1>
+            <div class="home-content">
+                <h2>Welcome to Our Digital Library</h2>
+                <p>This is a curated collection of book recommendations from our reading group. We believe in sharing knowledge and discovering new perspectives through literature.</p>
+
+                <h2>How It Works</h2>
+                <ul class="feature-list">
+                    <li>Browse our collection in the Library section</li>
+                    <li>Submit new recommendations with your access token</li>
+                    <li>Share reading locations and resources</li>
+                    <li>Build our collective knowledge base</li>
+                </ul>
+
+                <h2>Getting Started</h2>
+                <p>To contribute:</p>
+                <ul class="feature-list">
+                    <li>Get your access token from the group administrator</li>
+                    <li>Go to the Submit Entry page</li>
+                    <li>Fill in the book details and your thoughts</li>
+                    <li>Preview your entry before submission</li>
+                </ul>
+
+                <h2>Guidelines</h2>
+                <p>When submitting entries:</p>
+                <ul class="feature-list">
+                    <li>Include thoughtful notes about why you recommend the book</li>
+                    <li>Add links to legal reading sources when available</li>
+                    <li>Mention any relevant themes or topics</li>
+                    <li>Note any content warnings if applicable</li>
+                </ul>
+            </div>
+        </div>
+
         <!-- Library Page -->
-        <div id="library" class="content">
+        <div id="library" class="content" style="display: none;">
             <h1>LIBRARY CATALOG</h1>
             <div id="entries"></div>
         </div>
@@ -224,7 +298,8 @@
         // Configuration
         const GITHUB_OWNER = 'teodorionita';
         const GITHUB_REPO = 'TheVanguardLibrary';
-        const FILE_PATH = 'books.md';
+        const FILE_PATH = 'recommendations.md';
+        const GITHUB_TOKEN = 'YOUR_TOKEN_HERE';  // Will be replaced by GitHub Actions
 
         // Navigation
         document.querySelectorAll('nav a').forEach(link => {
@@ -303,9 +378,10 @@
                         `;
                     });
 
-                document.getElementById('entries').innerHTML = entries.join('');
+                document.getElementById('entries').innerHTML = entries.join('') || '<p>No entries yet.</p>';
             } catch (error) {
                 console.error('Error loading entries:', error);
+                document.getElementById('entries').innerHTML = '<p>Error loading library entries.</p>';
             }
         }
 
@@ -315,6 +391,11 @@
             const status = document.getElementById('status');
             const token = document.getElementById('token').value;
             
+            if (token !== GITHUB_TOKEN) {
+                status.innerHTML = '<div class="message error">Invalid access token</div>';
+                return;
+            }
+
             try {
                 const title = document.getElementById('title').value;
                 const author = document.getElementById('author').value;
@@ -322,21 +403,15 @@
                 const username = document.getElementById('username').value;
                 const url = document.getElementById('url').value;
 
-                // First, try to get the current content to verify the token
                 const fileResponse = await fetch(
                     `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${FILE_PATH}`,
                     {
                         headers: {
-                            'Authorization': `token ${token}`,
+                            'Authorization': `token ${GITHUB_TOKEN}`,
                             'Accept': 'application/vnd.github.v3+json'
                         }
                     }
                 );
-                
-                if (!fileResponse.ok) {
-                    throw new Error('Invalid access token');
-                }
-
                 const fileData = await fileResponse.json();
                 const currentContent = atob(fileData.content);
                 const date = new Date().toISOString().split('T')[0];
@@ -359,7 +434,7 @@ Filed by: ${username} | Date: ${date}
                     {
                         method: 'PUT',
                         headers: {
-                            'Authorization': `token ${token}`,
+                            'Authorization': `token ${GITHUB_TOKEN}`,
                             'Content-Type': 'application/json',
                         },
                         body: JSON.stringify({
@@ -373,7 +448,7 @@ Filed by: ${username} | Date: ${date}
                 if (updateResponse.ok) {
                     status.innerHTML = '<div class="message success">Entry successfully filed in the catalog.</div>';
                     event.target.reset();
-                    document.getElementById('preview').style.display = 'none';
+                    document.getElementById('preview').style.display ='none';
                     loadEntries();
                 } else {
                     const errorData = await updateResponse.json();
