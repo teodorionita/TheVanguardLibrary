@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Vanguard Library</title>
+    <style>
+        /* Base styles */
+        body {
+            font-family: "Courier New", Courier, monospace;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 1rem;
+            line-height: 1.6;
+            background: #f4f1ea;
+            color: #2c1810;
+        }
+
+        /* Navigation */
+        nav {
+            border-bottom: 2px solid #2c1810;
+            padding-bottom: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        nav ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            gap: 2rem;
+        }
+
+        nav a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        nav a:hover {
+            text-decoration: underline;
+        }
+
+        nav a.active {
+            font-weight: bold;
+        }
+
+        /* Content styles */
+        h1 {
+            font-size: 1.5rem;
+            font-weight: normal;
+            margin-bottom: 2rem;
+        }
+
+        .content {
+            padding: 1rem 0;
+        }
+
+        /* Form styles */
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 0.5rem;
+            font-family: inherit;
+            font-size: 1rem;
+            border: 1px solid #2c1810;
+            background: transparent;
+            color: inherit;
+        }
+
+        textarea {
+            resize: vertical;
+        }
+
+        button {
+            font-family: inherit;
+            font-size: 1rem;
+            padding: 0.5rem 1.5rem;
+            background: #2c1810;
+            color: #f4f1ea;
+            border: none;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #2c1810cc;
+        }
+
+        .message {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            border: 1px solid currentColor;
+        }
+
+        .error { color: #842029; }
+        .success { color: #0f5132; }
+
+        fieldset {
+            border: 1px solid #2c1810;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        legend {
+            padding: 0 0.5rem;
+        }
+
+        /* Preview styles */
+        .preview {
+            margin-top: 2rem;
+            padding: 1rem;
+            border: 1px solid #2c1810;
+            background: #fff;
+        }
+
+        .preview h3 {
+            margin: 0;
+            font-size: 1.1rem;
+        }
+
+        /* Library card styles */
+        .library-card {
+            background: #fff;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border: 1px solid #2c1810;
+        }
+
+        .library-card__meta {
+            font-size: 0.875rem;
+            color: #666;
+            margin-top: 0.5rem;
+            border-top: 1px dotted #2c1810;
+            padding-top: 0.5rem;
+        }
+
+        .library-card__url {
+            font-family: inherit;
+            font-size: 0.875rem;
+            color: #2c1810;
+            margin: 0.5rem 0;
+            word-break: break-word;
+        }
+
+        .library-card__url a {
+            color: inherit;
+            text-decoration: underline;
+            text-decoration-style: dotted;
+        }
+
+        .library-card__url a:hover {
+            text-decoration-style: solid;
+        }
+
+        /* Wiki styles */
+        .wiki-content {
+            padding: 1rem;
+            background: #fff;
+            border: 1px solid #2c1810;
+        }
+
+        .wiki-content h2 {
+            font-size: 1.2rem;
+            margin-top: 2rem;
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <ul>
+            <li><a href="#" class="active" data-page="library">Library</a></li>
+            <li><a href="#" data-page="submit">Submit Entry</a></li>
+            <li><a href="#" data-page="wiki">Wiki</a></li>
+        </ul>
+    </nav>
+
+    <div id="pages">
+        <!-- Library Page -->
+        <div id="library" class="content">
+            <h1>LIBRARY CATALOG</h1>
+            <div id="entries"></div>
+        </div>
+
+        <!-- Submit Page -->
+        <div id="submit" class="content" style="display: none;">
+            <h1>NEW CATALOG ENTRY</h1>
+            <form id="bookForm">
+                <fieldset>
+                    <legend>Entry Details</legend>
+                    
+                    <div class="form-group">
+                        <label for="password">Access Code:</label>
+                        <input type="password" id="password" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="username">Librarian Name:</label>
+                        <input type="text" id="username" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="title">Title:</label>
+                        <input type="text" id="title" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="author">Author:</label>
+                        <input type="text" id="author" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="url">Reading Location (optional):</label>
+                        <input type="url" id="url" placeholder="https://... (URL to book/reading location)">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="review">Notes:</label>
+                        <textarea id="review" rows="4" required></textarea>
+                    </div>
+
+                    <button type="button" id="previewBtn">Preview Entry</button>
+                    <button type="submit">File Entry</button>
+                </fieldset>
+            </form>
+            <div id="preview" class="preview" style="display: none;"></div>
+            <div id="status"></div>
+        </div>
+
+        <!-- Wiki Page -->
+        <div id="wiki" class="content" style="display: none;">
+            <h1>LIBRARY WIKI</h1>
+            <div class="wiki-content">
+                <h2>About Our Library</h2>
+                <p>Welcome to our reading group's digital library catalog. Here we maintain our collective knowledge and recommendations.</p>
+                
+                <h2>How to Submit</h2>
+                <p>1. Navigate to the Submit Entry page<br>
+                   2. Enter the group access code<br>
+                   3. Fill in your details and book information<br>
+                   4. Preview your submission<br>
+                   5. File your entry</p>
+                
+                <h2>Guidelines</h2>
+                <p>- Be descriptive but concise<br>
+                   - Include relevant themes or topics<br>
+                   - Note any content warnings if applicable<br>
+                   - Add URLs to legal reading sources when available</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuration - Replace these values!
+        const GITHUB_OWNER = 'YOUR_GITHUB_USERNAME';
+        const GITHUB_REPO = 'YOUR_REPO_NAME';
+        const FILE_PATH = 'README.md';
+        const SHARED_TOKEN = 'YOUR_GITHUB_TOKEN';
+        const GROUP_PASSWORD = 'YOUR_GROUP_PASSWORD';
+
+        // Navigation
+        document.querySelectorAll('nav a').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const pageId = e.target.dataset.page;
+                
+                document.querySelectorAll('nav a').forEach(l => l.classList.remove('active'));
+                e.target.classList.add('active');
+                
+                document.querySelectorAll('.content').forEach(page => {
+                    page.style.display = 'none';
+                });
+                document.getElementById(pageId).style.display = 'block';
+
+                if (pageId === 'library') {
+                    loadEntries();
+                }
+            });
+        });
+
+        // Preview functionality
+        document.getElementById('previewBtn').addEventListener('click', () => {
+            const preview = document.getElementById('preview');
+            const title = document.getElementById('title').value;
+            const author = document.getElementById('author').value;
+            const url = document.getElementById('url').value;
+            const review = document.getElementById('review').value;
+            const username = document.getElementById('username').value;
+            const date = new Date().toISOString().split('T')[0];
+
+            preview.innerHTML = `
+                <h3>${title}</h3>
+                <em>by ${author}</em>
+                <p>${review}</p>
+                ${url ? `<div class="library-card__url">Available at: <a href="${url}" target="_blank">${url}</a></div>` : ''}
+                <div class="library-card__meta">
+                    Filed by: ${username} | Date: ${date}
+                </div>
+            `;
+            preview.style.display = 'block';
+        });
+
+        // Load entries
+        async function loadEntries() {
+            try {
+                const response = await fetch(
+                    `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${FILE_PATH}`,
+                    {
+                        headers: {
+                            'Authorization': `token ${SHARED_TOKEN}`,
+                            'Accept': 'application/vnd.github.v3+json'
+                        }
+                    }
+                );
+                const data = await response.json();
+                const content = atob(data.content);
+                
+                // Parse markdown content (skip the first title)
+                const entries = content.split('###').slice(1)
+                    .filter(entry => !entry.includes('Add your recommendation here'))
+                    .map(entry => {
+                        const lines = entry.trim().split('\n');
+                        const title = lines[0].trim();
+                        const author = lines[1].replace('*by', '').replace('*', '').trim();
+                        
+                        // Find URL if present
+                        const urlIndex = lines.findIndex(line => line.startsWith('Available at:'));
+                        const url = urlIndex !== -1 ? lines[urlIndex].replace('Available at:', '').trim() : null;
+                        
+                        // Get review (excluding URL and meta)
+                        const reviewEnd = urlIndex !== -1 ? urlIndex : lines.length - 2;
+                        const review = lines.slice(2, reviewEnd).join('\n').trim();
+                        
+                        const meta = lines[lines.length - 2].trim();
+                        
+                        return `
+                            <div class="library-card">
+                                <h3>${title}</h3>
+                                <em>by ${author}</em>
+                                <p>${review}</p>
+                                ${url ? `<div class="library-card__url">Available at: <a href="${url}" target="_blank">${url}</a></div>` : ''}
+                                <div class="library-card__meta">${meta}</div>
+                            </div>
+                        `;
+                    });
+
+                document.getElementById('entries').innerHTML = entries.join('');
+            } catch (error) {
+                console.error('Error loading entries:', error);
+            }
+        }
+
+        // Form submission
+        document.getElementById('bookForm').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const status = document.getElementById('status');
+            const password = document.getElementById('password').value;
+            
+            if (password !== GROUP_PASSWORD) {
+                status.innerHTML = '<div class="message error">Invalid access code. Please verify and try again.</div>';
+                return;
+            }
+
+            const title = document.getElementById('title').value;
+            const author = document.getElementById('author').value;
+            const review = document.getElementById('review').value;
+            const username = document.getElementById('username').value;
+            const url = document.getElementById('url').value;
+
+            try {
+                const fileResponse = await fetch(
+                    `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${FILE_PATH}`,
+                    {
+                        headers: {
+                            'Authorization': `token ${SHARED_TOKEN}`,
+                            'Accept': 'application/vnd.github.v3+json'
+                        }
+                    }
+                );
+                const fileData = await fileResponse.json();
+
+                const currentContent = atob(fileData.content);
+                const date = new Date().toISOString().split('T')[0];
+                const newRecommendation = `
+### ${title}
+*by ${author}*
+
+${review}
+${url ? `\nAvailable at: ${url}\n` : ''}
+Filed by: ${username} | Date: ${date}
+
+`;
+                const updatedContent = currentContent.replace(
+                    '### [Add your recommendation here!]',
+                    `${newRecommendation}### [Add your recommendation here!]`
+                );
+
+                const updateResponse = await fetch(
+                    `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${FILE_PATH}`,
+                    {
+                        method: 'PUT',
+                        headers: {
+                            'Authorization': `token ${SHARED_TOKEN}`,
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            message: `File: ${title} (by ${username})`,
+                            content: btoa(updatedContent),
+                            sha: fileData.sha
+                        })
+                    }
+                );
+                
+                if (updateResponse.ok) {
+                    status.innerHTML = '<div class="message success">Entry successfully filed in the catalog.</div>';
+                    event.target.reset();
+                    document.getElementById('preview').style.display = 'none';
+                } else {
+                    const errorData = await updateResponse.json();
+                    throw new Error(errorData.message);
+                }
+            } catch (error) {
+                status.innerHTML = `<div class="message error">Filing error: ${error.message}</div>`;
+            }
+        });
+
+        // Load entries on initial page load
+        loadEntries();
+    </script>
+</body>
+</html>
